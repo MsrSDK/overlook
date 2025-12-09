@@ -52,6 +52,10 @@ class ControlPanel {
             <span id="valRotation" style="font-size:12px;">0°</span>
           </div>
           <input type="range" id="inpRotation" min="0" max="360" step="1" value="0" style="width:100%; cursor:pointer;">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button id="btnRotateLeft" style="flex:1; padding:6px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↶ -90°</button>
+            <button id="btnRotateRight" style="flex:1; padding:6px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↷ +90°</button>
+          </div>
         </div>
         
         <div style="margin-bottom:15px; border-top:1px solid #444; padding-top:10px;">
@@ -138,6 +142,31 @@ class ControlPanel {
                 const val = parseInt(e.target.value);
                 this.panel.querySelector('#valRotation').textContent = `${val}°`;
                 this.app.overlayManager.update(this.selectedOverlay.id, { rotation: val });
+            }
+        };
+
+        // Rotate left button (-90 degrees)
+        this.panel.querySelector('#btnRotateLeft').onclick = () => {
+            if (this.selectedOverlay) {
+                let currentRotation = this.selectedOverlay.rotation || 0;
+                let newRotation = (currentRotation - 90) % 360;
+                if (newRotation < 0) newRotation += 360;
+
+                this.panel.querySelector('#inpRotation').value = newRotation;
+                this.panel.querySelector('#valRotation').textContent = `${newRotation}°`;
+                this.app.overlayManager.update(this.selectedOverlay.id, { rotation: newRotation });
+            }
+        };
+
+        // Rotate right button (+90 degrees)
+        this.panel.querySelector('#btnRotateRight').onclick = () => {
+            if (this.selectedOverlay) {
+                let currentRotation = this.selectedOverlay.rotation || 0;
+                let newRotation = (currentRotation + 90) % 360;
+
+                this.panel.querySelector('#inpRotation').value = newRotation;
+                this.panel.querySelector('#valRotation').textContent = `${newRotation}°`;
+                this.app.overlayManager.update(this.selectedOverlay.id, { rotation: newRotation });
             }
         };
 
