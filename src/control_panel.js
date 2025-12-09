@@ -5,6 +5,7 @@ class ControlPanel {
         this.selectedOverlay = null;
         this.isAnchorMode = false;
         this.anchorPoint = null;
+        this.savedOpacity = null; // For opacity toggle
         this.render();
     }
 
@@ -45,6 +46,7 @@ class ControlPanel {
             <span id="valOpacity" style="font-size:12px;">100%</span>
           </div>
           <input type="range" id="inpOpacity" min="0" max="1" step="0.05" value="1" style="width:100%; cursor:pointer;">
+          <button id="btnToggleOpacity" style="width:100%; padding:6px; margin-top:8px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">⇄ Toggle 100%</button>
         </div>
         <div style="margin-bottom:12px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -134,6 +136,28 @@ class ControlPanel {
                 const val = parseFloat(e.target.value);
                 this.panel.querySelector('#valOpacity').textContent = `${Math.round(val * 100)}%`;
                 this.app.overlayManager.update(this.selectedOverlay.id, { opacity: val });
+            }
+        };
+
+        // Toggle opacity button (switch between current and 100%)
+        this.panel.querySelector('#btnToggleOpacity').onclick = () => {
+            if (this.selectedOverlay) {
+                const currentOpacity = this.selectedOverlay.opacity;
+
+                if (currentOpacity === 1) {
+                    // Currently at 100%, restore saved value or default to 50%
+                    const newOpacity = this.savedOpacity !== null ? this.savedOpacity : 0.5;
+                    this.panel.querySelector('#inpOpacity').value = newOpacity;
+                    this.panel.querySelector('#valOpacity').textContent = `${Math.round(newOpacity * 100)}%`;
+                    this.app.overlayManager.update(this.selectedOverlay.id, { opacity: newOpacity });
+                    this.savedOpacity = null; // Clear saved value
+                } else {
+                    // Not at 100%, save current and switch to 100%
+                    this.savedOpacity = currentOpacity;
+                    this.panel.querySelector('#inpOpacity').value = 1;
+                    this.panel.querySelector('#valOpacity').textContent = '100%';
+                    this.app.overlayManager.update(this.selectedOverlay.id, { opacity: 1 });
+                }
             }
         };
 
