@@ -38,6 +38,30 @@ class ControlPanel {
         <button id="btnUpload" style="flex:1; padding:8px; background:#28a745; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:500;">+ Upload</button>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
       </div>
+
+      <div style="margin-bottom:20px; border-bottom:1px solid #444; padding-bottom:15px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+             <label style="font-size:12px; color:#ccc; font-weight:600;">Add Shape</label>
+             <div style="display:flex; align-items:center; gap:8px;">
+                 <div id="colorPresets" style="display:flex; gap:4px;">
+                    <button data-color="#ff0000" title="Red" style="width:18px; height:18px; background:#ff0000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+                    <button data-color="#0000ff" title="Blue" style="width:18px; height:18px; background:#0000ff; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+                    <button data-color="#000000" title="Black" style="width:18px; height:18px; background:#000000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+                 </div>
+                 <input type="color" id="inpShapeColor" value="#ff0000" style="color:#ccc; border:none; width:50px; height:25px; padding:0; background:none; cursor:pointer;" title="Custom Color">
+             </div>
+          </div>
+          <div style="display:flex; gap:5px; margin-bottom:8px;">
+            <button id="btnShapeRect" title="Rectangle" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">⬜</button>
+            <button id="btnShapeCircle" title="Circle" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">◯</button>
+            <button id="btnShapeLine" title="Line" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">━</button>
+            <button id="btnShapeArrow" title="Arrow" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">➞</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+             <label style="font-size:11px; color:#aaa;">Thickness:</label>
+             <input type="range" id="inpShapeThickness" min="1" max="20" value="5" style="flex:1; cursor:pointer; height:4px;">
+          </div>
+      </div>
       
       <div id="controlsArea" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
         <div style="margin-bottom:12px;">
@@ -118,9 +142,22 @@ class ControlPanel {
                     };
                     img.src = evt.target.result;
                 };
-                reader.readAsDataURL(file);
             }
         };
+
+        // Color Presets
+        const colorInput = this.panel.querySelector('#inpShapeColor');
+        this.panel.querySelectorAll('#colorPresets button').forEach(btn => {
+            btn.onclick = () => {
+                colorInput.value = btn.dataset.color;
+            };
+        });
+
+        // Shape Buttons
+        this.panel.querySelector('#btnShapeRect').onclick = () => this.addShape('rect');
+        this.panel.querySelector('#btnShapeCircle').onclick = () => this.addShape('circle');
+        this.panel.querySelector('#btnShapeLine').onclick = () => this.addShape('line');
+        this.panel.querySelector('#btnShapeArrow').onclick = () => this.addShape('arrow');
 
         this.panel.querySelector('#btnClearAll').onclick = () => {
             if (confirm('Are you sure you want to remove all overlays?')) {
@@ -415,5 +452,63 @@ class ControlPanel {
         } else {
             controls.style.display = 'none';
         }
+    }
+
+    addShape(type) {
+        const color = this.panel.querySelector('#inpShapeColor').value;
+        const thickness = parseInt(this.panel.querySelector('#inpShapeThickness').value, 10);
+
+        const size = 200; // Default size
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = thickness;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Add padding to avoid clipping stroke
+        const pad = thickness / 2;
+        const w = size - thickness;
+        const h = size - thickness;
+
+        ctx.beginPath();
+        if (type === 'rect') {
+            ctx.strokeRect(pad, pad, w, h);
+        } else if (type === 'circle') {
+            ctx.ellipse(size / 2, size / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+        } else if (type === 'line') {
+            // Horizontal line centered
+            ctx.moveTo(pad, size / 2);
+            ctx.lineTo(size - pad, size / 2);
+            ctx.stroke();
+        } else if (type === 'arrow') {
+            const y = size / 2;
+            const endX = size - pad;
+            const startX = pad;
+            const headLen = size * 0.15; // Length of arrow head
+            const angle = Math.PI / 6;   // 30 degrees
+
+            ctx.moveTo(startX, y);
+            ctx.lineTo(endX, y);
+
+            // Arrow head
+            ctx.lineTo(endX - headLen * Math.cos(angle), y - headLen * Math.sin(angle));
+            ctx.moveTo(endX, y);
+            ctx.lineTo(endX - headLen * Math.cos(-angle), y - headLen * Math.sin(-angle));
+
+            ctx.stroke();
+        }
+
+        const dataUrl = canvas.toDataURL();
+
+        // Add to center of viewport
+        const left = (window.innerWidth - size) / 2;
+        const top = (window.innerHeight - size) / 2;
+
+        this.app.overlayManager.add(dataUrl, { left, top, width: size, height: size }, 'shape');
     }
 }
