@@ -72,6 +72,7 @@ class ControlPanel {
         </div>
 
         <div style="display:flex; gap:10px;">
+           <button id="btnDownload" style="flex:1; padding:6px; background:#17a2b8; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Save</button>
            <button id="btnFront" style="flex:1; padding:6px; background:#6c757d; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">To Front</button>
            <button id="btnDelete" style="flex:1; padding:6px; background:#dc3545; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Delete</button>
         </div>
@@ -200,6 +201,20 @@ class ControlPanel {
                     this.app.overlayManager.remove(this.selectedOverlay.id);
                     this.selectOverlay(null);
                 }
+            }
+        };
+
+        this.panel.querySelector('#btnDownload').onclick = () => {
+            if (this.selectedOverlay) {
+                const link = document.createElement('a');
+                link.href = this.selectedOverlay.src;
+                // Simple timestamp based filename
+                const date = new Date();
+                const timestamp = date.toISOString().replace(/[:.]/g, '-');
+                link.download = `overlook_capture_${timestamp}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
         };
 
