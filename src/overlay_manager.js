@@ -5,11 +5,12 @@ class OverlayManager {
         this.loadState();
     }
 
-    add(dataUrl, rect, type = 'capture') {
+    add(dataUrl, rect, type = 'capture', shapeType = null) {
         const id = Date.now().toString();
         const overlay = {
             id,
             type,
+            shapeType,
             src: dataUrl,
             x: rect.left,
             y: rect.top,
@@ -22,6 +23,14 @@ class OverlayManager {
         this.overlays.push(overlay);
         this.renderOverlay(overlay);
         this.saveState();
+    }
+
+    _parseSvg(svgString) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgString, 'image/svg+xml');
+        if (doc.querySelector('parsererror')) return null;
+        const svg = doc.querySelector('svg');
+        return svg ? document.importNode(svg, true) : null;
     }
 
     renderOverlay(overlayState) {
@@ -44,11 +53,7 @@ class OverlayManager {
         });
 
         if (overlayState.type === 'shape' && overlayState.src.startsWith('<svg')) {
-            const wrapper = document.createElement('div');
-            wrapper.style.width = '100%';
-            wrapper.style.height = '100%';
-            wrapper.innerHTML = overlayState.src;
-            const svg = wrapper.querySelector('svg');
+            const svg = this._parseSvg(overlayState.src);
             if (svg) {
                 Object.assign(svg.style, {
                     width: '100%',
@@ -253,14 +258,20 @@ class OverlayManager {
     }
 
     saveState() {
-        const state = this.overlays.map(o => ({
-            ...o
-        }));
-        chrome.storage.local.set({ [this.storageKey]: state });
+        const state = this.overlays.map(o => ({ ...o }));
+        chrome.storage.local.set({ [this.storageKey]: state }, () => {
+            if (chrome.runtime.lastError) {
+                console.warn('[OverLook] saveState failed:', chrome.runtime.lastError.message);
+            }
+        });
     }
 
     loadState() {
         chrome.storage.local.get([this.storageKey], (result) => {
+            if (chrome.runtime.lastError) {
+                console.warn('[OverLook] loadState failed:', chrome.runtime.lastError.message);
+                return;
+            }
             const state = result[this.storageKey];
             if (state && Array.isArray(state)) {
                 this.overlays = state;
@@ -302,9 +313,7 @@ class OverlayManager {
                     if (overlay.type === 'shape' && updates.src.startsWith('<svg')) {
                         const oldSvg = el.querySelector('svg');
                         if (oldSvg) oldSvg.remove();
-                        const wrapper = document.createElement('div');
-                        wrapper.innerHTML = updates.src;
-                        const newSvg = wrapper.querySelector('svg');
+                        const newSvg = this._parseSvg(updates.src);
                         if (newSvg) {
                             Object.assign(newSvg.style, {
                                 width: '100%',
@@ -340,11 +349,13 @@ class OverlayManager {
 
     bringToFront(id) {
         const overlay = this.overlays.find(o => o.id === id);
-        if (overlay) {
-            // Find max z-index
-            const maxZ = Math.max(...this.overlays.map(o => o.zIndex), 10000);
-            overlay.zIndex = maxZ + 1;
-            this.update(id, { zIndex: overlay.zIndex });
-        }
+        if (!overlay) return;
+        this.overlays = [...this.overlays.filter(o => o.id !== id), overlay];
+        this.overlays.forEach((o, i) => {
+            o.zIndex = 10000 + i;
+            const el = document.querySelector(`div[data-id="${o.id}"]`);
+            if (el) el.style.zIndex = o.zIndex;
+        });
+        this.saveState();
     }
 }

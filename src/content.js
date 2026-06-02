@@ -55,6 +55,10 @@ class App {
     createOverlay(dataUrl, rect) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            this.showError('Canvas unavailable. Please try again.');
+            return;
+        }
         const img = new Image();
 
         img.onload = () => {
@@ -73,6 +77,9 @@ class App {
             this.overlayManager.add(croppedDataUrl, rect);
 
             this.controlPanel.show();
+        };
+        img.onerror = () => {
+            this.showError('Failed to process the captured image.');
         };
         img.src = dataUrl;
     }

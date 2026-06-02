@@ -2,12 +2,16 @@
     "manifest_version": 3,
     "name": "OverLook",
     "version": "1.2",
-    "description": "Capture any screen area and overlay it on the page. Adjust opacity, rotation, and size to compare designs or references.",
+    "description": "Capture any screen region and overlay it on any page. Adjust opacity, rotation, and size. Add shapes. No data collection.",
+    "minimum_chrome_version": "88",
     "permissions": [
         "activeTab",
         "scripting",
         "storage"
     ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
     "action": {
         "default_title": "OverLook",
         "default_icon": {

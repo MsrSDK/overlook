@@ -145,7 +145,13 @@ class ControlPanel {
 
                         this.app.overlayManager.add(evt.target.result, { left: 100, top: 100, width, height }, 'upload');
                     };
+                    img.onerror = () => {
+                        this.app.showError('Failed to load the uploaded image.');
+                    };
                     img.src = evt.target.result;
+                };
+                reader.onerror = () => {
+                    this.app.showError('Failed to read the file.');
                 };
                 reader.readAsDataURL(file);
             }
@@ -477,8 +483,11 @@ class ControlPanel {
     }
 
     getShapeSvg(type, color, thickness, headSize) {
+        const safeColor = /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#ff0000';
+        const safeThickness = Math.max(1, Math.min(50, parseInt(thickness, 10) || 5));
+        const safeHeadSize = Math.max(1, Math.min(100, parseInt(headSize, 10) || 15));
         let svgContent = '';
-        const style = `fill:none;stroke:${color};stroke-width:${thickness};stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;`;
+        const style = `fill:none;stroke:${safeColor};stroke-width:${safeThickness};stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;`;
 
         if (type === 'rect') {
             svgContent = `<rect x="2%" y="2%" width="96%" height="96%" style="${style}" />`;
@@ -492,8 +501,8 @@ class ControlPanel {
             const markerId = `arrowhead-${Date.now()}`;
             svgContent = `
                 <defs>
-                    <marker id="${markerId}" markerWidth="${headSize}" markerHeight="${headSize}" refX="${headSize}" refY="${headSize / 2}" orient="auto" markerUnits="strokeWidth">
-                        <path d="M 0 0 L ${headSize} ${headSize / 2} L 0 ${headSize} z" fill="${color}" />
+                    <marker id="${markerId}" markerWidth="${safeHeadSize}" markerHeight="${safeHeadSize}" refX="${safeHeadSize}" refY="${safeHeadSize / 2}" orient="auto" markerUnits="strokeWidth">
+                        <path d="M 0 0 L ${safeHeadSize} ${safeHeadSize / 2} L 0 ${safeHeadSize} z" fill="${safeColor}" />
                     </marker>
                 </defs>
                 <line x1="5%" y1="5%" x2="95%" y2="95%" style="${style}" marker-end="url(#${markerId})" />
