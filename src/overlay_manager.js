@@ -1,7 +1,7 @@
 class OverlayManager {
     constructor() {
         this.overlays = [];
-        this.storageKey = `overlay_state_${window.location.href}`;
+        this.storageKey = `overlay_state_${location.origin}${location.pathname}`;
         this.loadState();
     }
 
@@ -35,23 +35,42 @@ class OverlayManager {
             width: `${overlayState.width}px`,
             height: `${overlayState.height}px`,
             transform: `rotate(${overlayState.rotation}deg)`,
+            transformOrigin: '0 0',
             zIndex: overlayState.zIndex,
             cursor: 'move',
             userSelect: 'none',
-            border: '2px solid rgba(255, 255, 255, 0.5)', // Default border
+            border: overlayState.type === 'shape' ? '2px solid transparent' : '2px solid rgba(255, 255, 255, 0.5)', // Shapes are transparent by default
             boxSizing: 'border-box'
         });
 
-        const img = document.createElement('img');
-        img.src = overlayState.src;
-        Object.assign(img.style, {
-            width: '100%',
-            height: '100%',
-            opacity: overlayState.opacity,
-            display: 'block',
-            pointerEvents: 'none' // Let events pass to container
-        });
-        container.appendChild(img);
+        if (overlayState.type === 'shape' && overlayState.src.startsWith('<svg')) {
+            const wrapper = document.createElement('div');
+            wrapper.style.width = '100%';
+            wrapper.style.height = '100%';
+            wrapper.innerHTML = overlayState.src;
+            const svg = wrapper.querySelector('svg');
+            if (svg) {
+                Object.assign(svg.style, {
+                    width: '100%',
+                    height: '100%',
+                    opacity: overlayState.opacity,
+                    display: 'block',
+                    pointerEvents: 'none'
+                });
+                container.appendChild(svg);
+            }
+        } else {
+            const img = document.createElement('img');
+            img.src = overlayState.src;
+            Object.assign(img.style, {
+                width: '100%',
+                height: '100%',
+                opacity: overlayState.opacity,
+                display: 'block',
+                pointerEvents: 'none'
+            });
+            container.appendChild(img);
+        }
 
         // Resize Handles
         const handles = ['nw', 'ne', 'se', 'sw'];
@@ -224,6 +243,13 @@ class OverlayManager {
         element.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
+
+        // Store cleanup so remove() can detach these listeners
+        state._dragCleanup = () => {
+            element.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        };
     }
 
     saveState() {
@@ -265,10 +291,34 @@ class OverlayManager {
                 if (updates.rotation !== undefined) el.style.transform = `rotate(${updates.rotation}deg)`;
                 if (updates.zIndex !== undefined) el.style.zIndex = updates.zIndex;
 
-                // Opacity applies to the image inside
+                // Opacity applies to the image or svg inside
                 if (updates.opacity !== undefined) {
-                    const img = el.querySelector('img');
-                    if (img) img.style.opacity = updates.opacity;
+                    const content = el.querySelector('img, svg');
+                    if (content) content.style.opacity = updates.opacity;
+                }
+
+                // Update content if src is provided (e.g. for shape property changes)
+                if (updates.src !== undefined) {
+                    if (overlay.type === 'shape' && updates.src.startsWith('<svg')) {
+                        const oldSvg = el.querySelector('svg');
+                        if (oldSvg) oldSvg.remove();
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = updates.src;
+                        const newSvg = wrapper.querySelector('svg');
+                        if (newSvg) {
+                            Object.assign(newSvg.style, {
+                                width: '100%',
+                                height: '100%',
+                                opacity: overlay.opacity,
+                                display: 'block',
+                                pointerEvents: 'none'
+                            });
+                            el.appendChild(newSvg);
+                        }
+                    } else {
+                        const img = el.querySelector('img');
+                        if (img) img.src = updates.src;
+                    }
                 }
             }
             this.saveState();
@@ -278,10 +328,11 @@ class OverlayManager {
     remove(id) {
         const index = this.overlays.findIndex(o => o.id === id);
         if (index !== -1) {
-            this.overlays.splice(index, 1);
+            const [overlay] = this.overlays.splice(index, 1);
+            if (overlay._dragCleanup) overlay._dragCleanup();
             const el = document.querySelector(`div[data-id="${id}"]`);
             if (el) el.remove();
-            const anchorEl = document.querySelector(`.anchor-point`);
+            const anchorEl = document.querySelector('.anchor-point');
             if (anchorEl) anchorEl.remove();
             this.saveState();
         }

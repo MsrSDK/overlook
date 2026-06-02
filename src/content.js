@@ -16,6 +16,27 @@ class App {
         });
     }
 
+    showError(message) {
+        const toast = document.createElement('div');
+        Object.assign(toast.style, {
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(220,53,69,0.95)',
+            color: '#fff',
+            padding: '10px 20px',
+            borderRadius: '6px',
+            fontSize: '13px',
+            zIndex: '2147483647',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            pointerEvents: 'none'
+        });
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
     async handleSelection(rect) {
         try {
             const response = await chrome.runtime.sendMessage({ action: 'captureVisibleTab' });
@@ -23,9 +44,11 @@ class App {
                 this.createOverlay(response.dataUrl, rect);
             } else {
                 console.error('Capture failed:', response.error);
+                this.showError('Screenshot capture failed. Please try again.');
             }
         } catch (err) {
             console.error('Error sending message:', err);
+            this.showError('Could not communicate with the extension. Please reload the page.');
         }
     }
 

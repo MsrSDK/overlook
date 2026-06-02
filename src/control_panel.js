@@ -57,10 +57,15 @@ class ControlPanel {
             <button id="btnShapeLine" title="Line" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">━</button>
             <button id="btnShapeArrow" title="Arrow" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">➞</button>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
              <label style="font-size:11px; color:#aaa;">Thickness:</label>
              <input type="range" id="inpShapeThickness" min="1" max="20" value="5" style="flex:1; cursor:pointer; height:4px;">
           </div>
+          <div id="arrowControls" style="display:none; align-items:center; gap:8px;">
+             <label style="font-size:11px; color:#aaa;">Head Size:</label>
+             <input type="range" id="inpArrowHeadSize" min="1" max="50" value="15" style="flex:1; cursor:pointer; height:4px;">
+          </div>
+
       </div>
       
       <div id="controlsArea" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
@@ -142,6 +147,7 @@ class ControlPanel {
                     };
                     img.src = evt.target.result;
                 };
+                reader.readAsDataURL(file);
             }
         };
 
@@ -154,10 +160,11 @@ class ControlPanel {
         });
 
         // Shape Buttons
-        this.panel.querySelector('#btnShapeRect').onclick = () => this.addShape('rect');
-        this.panel.querySelector('#btnShapeCircle').onclick = () => this.addShape('circle');
-        this.panel.querySelector('#btnShapeLine').onclick = () => this.addShape('line');
-        this.panel.querySelector('#btnShapeArrow').onclick = () => this.addShape('arrow');
+        this.panel.querySelector('#btnShapeRect').onclick = () => { this.addShape('rect'); this.toggleArrowControls(false); };
+        this.panel.querySelector('#btnShapeCircle').onclick = () => { this.addShape('circle'); this.toggleArrowControls(false); };
+        this.panel.querySelector('#btnShapeLine').onclick = () => { this.addShape('line'); this.toggleArrowControls(false); };
+        this.panel.querySelector('#btnShapeArrow').onclick = () => { this.addShape('arrow'); this.toggleArrowControls(true); };
+
 
         this.panel.querySelector('#btnClearAll').onclick = () => {
             if (confirm('Are you sure you want to remove all overlays?')) {
@@ -168,6 +175,17 @@ class ControlPanel {
 
         const inpOpacity = this.panel.querySelector('#inpOpacity');
         const inpRotation = this.panel.querySelector('#inpRotation');
+        const inpArrowHeadSize = this.panel.querySelector('#inpArrowHeadSize');
+
+        inpArrowHeadSize.oninput = (e) => {
+            if (this.selectedOverlay && this.selectedOverlay.shapeType === 'arrow') {
+                const headSize = parseInt(e.target.value, 10);
+                const color = this.panel.querySelector('#inpShapeColor').value;
+                const thickness = parseInt(this.panel.querySelector('#inpShapeThickness').value, 10);
+                const newSvg = this.getShapeSvg('arrow', color, thickness, headSize);
+                this.app.overlayManager.update(this.selectedOverlay.id, { src: newSvg });
+            }
+        };
 
         inpOpacity.oninput = (e) => {
             if (this.selectedOverlay) {
@@ -425,7 +443,7 @@ class ControlPanel {
             // Deselect previous
             const prevEl = document.querySelector(`div[data-id="${this.selectedOverlay.id}"]`);
             if (prevEl) {
-                prevEl.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                prevEl.style.borderColor = this.selectedOverlay.type === 'shape' ? 'transparent' : 'rgba(255, 255, 255, 0.5)';
                 prevEl.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
             }
 
@@ -454,61 +472,53 @@ class ControlPanel {
         }
     }
 
+    toggleArrowControls(show) {
+        this.panel.querySelector('#arrowControls').style.display = show ? 'flex' : 'none';
+    }
+
+    getShapeSvg(type, color, thickness, headSize) {
+        let svgContent = '';
+        const style = `fill:none;stroke:${color};stroke-width:${thickness};stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;`;
+
+        if (type === 'rect') {
+            svgContent = `<rect x="2%" y="2%" width="96%" height="96%" style="${style}" />`;
+        } else if (type === 'circle') {
+            svgContent = `<ellipse cx="50%" cy="50%" rx="48%" ry="48%" style="${style}" />`;
+        } else if (type === 'line') {
+            svgContent = `<line x1="5%" y1="5%" x2="95%" y2="95%" style="${style}" />`;
+        } else if (type === 'arrow') {
+            // Using markers to prevent arrowhead distortion when the container is stretched.
+            // Since we use 100% coordinates and no viewBox, the marker's own coordinate system is used.
+            const markerId = `arrowhead-${Date.now()}`;
+            svgContent = `
+                <defs>
+                    <marker id="${markerId}" markerWidth="${headSize}" markerHeight="${headSize}" refX="${headSize}" refY="${headSize / 2}" orient="auto" markerUnits="strokeWidth">
+                        <path d="M 0 0 L ${headSize} ${headSize / 2} L 0 ${headSize} z" fill="${color}" />
+                    </marker>
+                </defs>
+                <line x1="5%" y1="5%" x2="95%" y2="95%" style="${style}" marker-end="url(#${markerId})" />
+            `.trim();
+        }
+
+        return `
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" overflow="visible">
+    ${svgContent}
+</svg>
+        `.trim();
+    }
+
     addShape(type) {
         const color = this.panel.querySelector('#inpShapeColor').value;
         const thickness = parseInt(this.panel.querySelector('#inpShapeThickness').value, 10);
+        const headSize = parseInt(this.panel.querySelector('#inpArrowHeadSize').value, 10);
+
+        const svg = this.getShapeSvg(type, color, thickness, headSize);
 
         const size = 200; // Default size
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = thickness;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        // Add padding to avoid clipping stroke
-        const pad = thickness / 2;
-        const w = size - thickness;
-        const h = size - thickness;
-
-        ctx.beginPath();
-        if (type === 'rect') {
-            ctx.strokeRect(pad, pad, w, h);
-        } else if (type === 'circle') {
-            ctx.ellipse(size / 2, size / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
-            ctx.stroke();
-        } else if (type === 'line') {
-            // Horizontal line centered
-            ctx.moveTo(pad, size / 2);
-            ctx.lineTo(size - pad, size / 2);
-            ctx.stroke();
-        } else if (type === 'arrow') {
-            const y = size / 2;
-            const endX = size - pad;
-            const startX = pad;
-            const headLen = size * 0.15; // Length of arrow head
-            const angle = Math.PI / 6;   // 30 degrees
-
-            ctx.moveTo(startX, y);
-            ctx.lineTo(endX, y);
-
-            // Arrow head
-            ctx.lineTo(endX - headLen * Math.cos(angle), y - headLen * Math.sin(angle));
-            ctx.moveTo(endX, y);
-            ctx.lineTo(endX - headLen * Math.cos(-angle), y - headLen * Math.sin(-angle));
-
-            ctx.stroke();
-        }
-
-        const dataUrl = canvas.toDataURL();
-
-        // Add to center of viewport
         const left = (window.innerWidth - size) / 2;
         const top = (window.innerHeight - size) / 2;
 
-        this.app.overlayManager.add(dataUrl, { left, top, width: size, height: size }, 'shape');
+        this.app.overlayManager.add(svg, { left, top, width: size, height: size }, 'shape', type);
     }
+
 }
