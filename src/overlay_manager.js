@@ -5,7 +5,7 @@ class OverlayManager {
         this.loadState();
     }
 
-    add(dataUrl, rect, type = 'capture', shapeType = null) {
+    add(dataUrl, rect, type = 'capture', shapeType = null, shapeProps = null) {
         const id = Date.now().toString();
         const overlay = {
             id,
@@ -18,7 +18,12 @@ class OverlayManager {
             height: rect.height,
             rotation: 0,
             opacity: 1,
-            zIndex: 10000 + this.overlays.length
+            zIndex: 10000 + this.overlays.length,
+            ...(shapeProps && {
+                shapeColor: shapeProps.color,
+                shapeThickness: shapeProps.thickness,
+                shapeHeadSize: shapeProps.headSize
+            })
         };
         this.overlays.push(overlay);
         this.renderOverlay(overlay);

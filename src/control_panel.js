@@ -89,6 +89,29 @@ class ControlPanel {
           </div>
         </div>
         
+        <div id="shapePropertiesArea" style="display:none; border-top:1px solid #444; padding-top:10px; margin-bottom:12px;">
+          <label style="font-size:12px; color:#ccc; display:block; margin-bottom:8px;">Shape Properties</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-size:11px; color:#aaa;">Color:</label>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div id="editColorPresets" style="display:flex; gap:4px;">
+                <button data-color="#ff0000" title="Red" style="width:18px; height:18px; background:#ff0000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+                <button data-color="#0000ff" title="Blue" style="width:18px; height:18px; background:#0000ff; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+                <button data-color="#000000" title="Black" style="width:18px; height:18px; background:#000000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
+              </div>
+              <input type="color" id="inpEditShapeColor" value="#ff0000" style="border:none; width:40px; height:22px; padding:0; background:none; cursor:pointer;" title="Custom Color">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+            <label style="font-size:11px; color:#aaa;">Thickness:</label>
+            <input type="range" id="inpEditShapeThickness" min="1" max="20" value="5" style="flex:1; cursor:pointer; height:4px;">
+          </div>
+          <div id="editArrowControls" style="display:none; align-items:center; gap:8px;">
+            <label style="font-size:11px; color:#aaa;">Head Size:</label>
+            <input type="range" id="inpEditArrowHeadSize" min="1" max="50" value="15" style="flex:1; cursor:pointer; height:4px;">
+          </div>
+        </div>
+
         <div style="margin-bottom:15px; border-top:1px solid #444; padding-top:10px;">
            <label style="font-size:12px; color:#ccc; display:block; margin-bottom:8px;">Anchor Scaling</label>
            <button id="btnAnchorMode" style="width:100%; padding:8px; background:#444; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; gap:5px;">
@@ -117,7 +140,7 @@ class ControlPanel {
     }
 
     attachEvents() {
-        this.panel.querySelector('#closePanel').onclick = () => this.hide();
+        this.panel.querySelector('#closePanel').onclick = () => this._showCloseDialog();
         this.panel.querySelector('#btnCapture').onclick = () => {
             this.app.selectionManager.start();
         };
@@ -181,17 +204,22 @@ class ControlPanel {
 
         const inpOpacity = this.panel.querySelector('#inpOpacity');
         const inpRotation = this.panel.querySelector('#inpRotation');
-        const inpArrowHeadSize = this.panel.querySelector('#inpArrowHeadSize');
 
-        inpArrowHeadSize.oninput = (e) => {
-            if (this.selectedOverlay && this.selectedOverlay.shapeType === 'arrow') {
-                const headSize = parseInt(e.target.value, 10);
-                const color = this.panel.querySelector('#inpShapeColor').value;
-                const thickness = parseInt(this.panel.querySelector('#inpShapeThickness').value, 10);
-                const newSvg = this.getShapeSvg('arrow', color, thickness, headSize);
-                this.app.overlayManager.update(this.selectedOverlay.id, { src: newSvg });
-            }
-        };
+        // Shape property edit controls (shown when a shape overlay is selected)
+        const inpEditColor = this.panel.querySelector('#inpEditShapeColor');
+        const inpEditThickness = this.panel.querySelector('#inpEditShapeThickness');
+        const inpEditHeadSize = this.panel.querySelector('#inpEditArrowHeadSize');
+
+        inpEditColor.oninput = () => this._updateSelectedShapeSvg();
+        inpEditThickness.oninput = () => this._updateSelectedShapeSvg();
+        inpEditHeadSize.oninput = () => this._updateSelectedShapeSvg();
+
+        this.panel.querySelectorAll('#editColorPresets button').forEach(btn => {
+            btn.onclick = () => {
+                inpEditColor.value = btn.dataset.color;
+                this._updateSelectedShapeSvg();
+            };
+        });
 
         inpOpacity.oninput = (e) => {
             if (this.selectedOverlay) {
@@ -473,6 +501,23 @@ class ControlPanel {
             this.panel.querySelector('#valOpacity').textContent = `${Math.round(overlayState.opacity * 100)}%`;
             this.panel.querySelector('#inpRotation').value = overlayState.rotation;
             this.panel.querySelector('#valRotation').textContent = `${overlayState.rotation}°`;
+
+            // Show shape property controls if the selected overlay is a shape
+            const shapePropsArea = this.panel.querySelector('#shapePropertiesArea');
+            if (overlayState.type === 'shape') {
+                shapePropsArea.style.display = 'block';
+                this.panel.querySelector('#inpEditShapeColor').value = overlayState.shapeColor || '#ff0000';
+                this.panel.querySelector('#inpEditShapeThickness').value = overlayState.shapeThickness || 5;
+                const editArrow = this.panel.querySelector('#editArrowControls');
+                if (overlayState.shapeType === 'arrow') {
+                    editArrow.style.display = 'flex';
+                    this.panel.querySelector('#inpEditArrowHeadSize').value = overlayState.shapeHeadSize || 15;
+                } else {
+                    editArrow.style.display = 'none';
+                }
+            } else {
+                shapePropsArea.style.display = 'none';
+            }
         } else {
             controls.style.display = 'none';
         }
@@ -496,17 +541,33 @@ class ControlPanel {
         } else if (type === 'line') {
             svgContent = `<line x1="5%" y1="5%" x2="95%" y2="95%" style="${style}" />`;
         } else if (type === 'arrow') {
-            // Using markers to prevent arrowhead distortion when the container is stretched.
-            // Since we use 100% coordinates and no viewBox, the marker's own coordinate system is used.
-            const markerId = `arrowhead-${Date.now()}`;
-            svgContent = `
-                <defs>
-                    <marker id="${markerId}" markerWidth="${safeHeadSize}" markerHeight="${safeHeadSize}" refX="${safeHeadSize}" refY="${safeHeadSize / 2}" orient="auto" markerUnits="strokeWidth">
-                        <path d="M 0 0 L ${safeHeadSize} ${safeHeadSize / 2} L 0 ${safeHeadSize} z" fill="${safeColor}" />
-                    </marker>
-                </defs>
-                <line x1="5%" y1="5%" x2="95%" y2="95%" style="${style}" marker-end="url(#${markerId})" />
-            `.trim();
+            // Use viewBox + direct polygon so the tip is always within bounds.
+            // preserveAspectRatio="none" maps viewBox (0-100) to container %, so geometry
+            // scales proportionally and the arrowhead stays aligned with the line.
+            const dir = 1 / Math.sqrt(2); // 45° diagonal direction
+            const depth = safeHeadSize;
+            const hw = safeHeadSize / 2;
+
+            const tipX = 95, tipY = 95;
+            const baseCX = +(tipX - depth * dir).toFixed(2);
+            const baseCY = +(tipY - depth * dir).toFixed(2);
+
+            // Perpendicular to the 45° arrow direction
+            const perpX = -dir, perpY = dir;
+            const p1x = +(baseCX + hw * perpX).toFixed(2);
+            const p1y = +(baseCY + hw * perpY).toFixed(2);
+            const p2x = +(baseCX - hw * perpX).toFixed(2);
+            const p2y = +(baseCY - hw * perpY).toFixed(2);
+
+            // Extend line endpoint into the polygon so the filled head hides the round cap
+            const lineEndX = +(baseCX + depth * 0.5 * dir).toFixed(2);
+            const lineEndY = +(baseCY + depth * 0.5 * dir).toFixed(2);
+
+            const arrowLineStyle = `fill:none;stroke:${safeColor};stroke-width:${safeThickness};stroke-linecap:round;vector-effect:non-scaling-stroke;`;
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
+    <line x1="5" y1="5" x2="${lineEndX}" y2="${lineEndY}" style="${arrowLineStyle}" />
+    <polygon points="${p1x},${p1y} ${tipX},${tipY} ${p2x},${p2y}" fill="${safeColor}" />
+</svg>`;
         }
 
         return `
@@ -523,11 +584,90 @@ class ControlPanel {
 
         const svg = this.getShapeSvg(type, color, thickness, headSize);
 
-        const size = 200; // Default size
+        const size = 200;
         const left = (window.innerWidth - size) / 2;
         const top = (window.innerHeight - size) / 2;
 
-        this.app.overlayManager.add(svg, { left, top, width: size, height: size }, 'shape', type);
+        this.app.overlayManager.add(svg, { left, top, width: size, height: size }, 'shape', type, { color, thickness, headSize });
+    }
+
+    _updateSelectedShapeSvg() {
+        if (!this.selectedOverlay || this.selectedOverlay.type !== 'shape') return;
+        const color = this.panel.querySelector('#inpEditShapeColor').value;
+        const thickness = parseInt(this.panel.querySelector('#inpEditShapeThickness').value, 10);
+        const headSize = parseInt(this.panel.querySelector('#inpEditArrowHeadSize').value, 10);
+        const newSvg = this.getShapeSvg(this.selectedOverlay.shapeType, color, thickness, headSize);
+        this.app.overlayManager.update(this.selectedOverlay.id, {
+            src: newSvg,
+            shapeColor: color,
+            shapeThickness: thickness,
+            shapeHeadSize: headSize
+        });
+    }
+
+    _showCloseDialog() {
+        const count = this.app.overlayManager.overlays.length;
+        if (count === 0) {
+            this.hide();
+            return;
+        }
+
+        const backdrop = document.createElement('div');
+        Object.assign(backdrop.style, {
+            position: 'fixed',
+            top: '0', left: '0',
+            width: '100%', height: '100%',
+            background: 'rgba(0,0,0,0.55)',
+            zIndex: '2147483646',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+
+        const dialog = document.createElement('div');
+        Object.assign(dialog.style, {
+            background: 'rgba(30,30,30,0.98)',
+            color: '#fff',
+            padding: '24px',
+            borderRadius: '10px',
+            width: '300px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            backdropFilter: 'blur(10px)'
+        });
+
+        const label = count === 1 ? '1 overlay' : `${count} overlays`;
+        dialog.innerHTML = `
+            <h3 style="margin:0 0 10px; font-size:16px; font-weight:600;">Close Panel</h3>
+            <p style="margin:0 0 20px; font-size:13px; color:#ccc; line-height:1.6;">
+                You have ${label} on screen.<br>Keep them after closing?
+            </p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button id="dlgKeep"   style="padding:10px; background:#007bff; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Keep &amp; Close</button>
+                <button id="dlgDelete" style="padding:10px; background:#dc3545; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Delete All &amp; Close</button>
+                <button id="dlgCancel" style="padding:10px; background:#444;    border:none; border-radius:6px; color:#ccc; cursor:pointer; font-size:13px;">Cancel</button>
+            </div>
+        `;
+
+        backdrop.appendChild(dialog);
+        document.body.appendChild(backdrop);
+
+        const close = (action) => {
+            backdrop.remove();
+            if (action === 'keep') {
+                this.hide();
+            } else if (action === 'delete') {
+                this.app.overlayManager.clear();
+                this.selectOverlay(null);
+                this.hide();
+            }
+            // 'cancel': backdrop closes but panel stays open
+        };
+
+        dialog.querySelector('#dlgKeep').onclick   = () => close('keep');
+        dialog.querySelector('#dlgDelete').onclick = () => close('delete');
+        dialog.querySelector('#dlgCancel').onclick = () => close('cancel');
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close('cancel'); });
     }
 
 }

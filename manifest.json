@@ -15,17 +15,17 @@
     "action": {
         "default_title": "OverLook",
         "default_icon": {
-            "16": "icons/pageview16.png",
-            "48": "icons/pageview48.png",
-            "128": "icons/pageview128.png"
+            "16": "icons/overlook16.png",
+            "48": "icons/overlook48.png",
+            "128": "icons/overlook128.png"
         }
     },
     "background": {
         "service_worker": "src/background.js"
     },
     "icons": {
-        "16": "icons/pageview16.png",
-        "48": "icons/pageview48.png",
-        "128": "icons/pageview128.png"
+        "16": "icons/overlook16.png",
+        "48": "icons/overlook48.png",
+        "128": "icons/overlook128.png"
     }
 }
