@@ -206,32 +206,34 @@ class OverlayManager {
     }
 
     attachDragEvents(element, state) {
-        let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
-        const onMouseDown = (e) => {
+        const onPointerDown = (e) => {
             // If anchor mode is active in control panel, don't drag
             if (window.screenOverlayApp && window.screenOverlayApp.controlPanel.isAnchorMode) return;
             // Ignore if clicking on resize handle
             if (e.target.classList.contains('resize-handle')) return;
 
             e.preventDefault();
-            e.stopPropagation(); // Prevent selecting other elements
-            isDragging = true;
+            e.stopPropagation();
             startX = e.clientX;
             startY = e.clientY;
             initialLeft = state.x;
             initialTop = state.y;
             element.style.cursor = 'grabbing';
+            element.setPointerCapture(e.pointerId);
 
             // Notify app to select this overlay (for control panel)
             if (window.screenOverlayApp && window.screenOverlayApp.controlPanel) {
                 window.screenOverlayApp.controlPanel.selectOverlay(state);
             }
+
+            element.addEventListener('pointermove', onPointerMove);
+            element.addEventListener('pointerup', onPointerUp);
+            element.addEventListener('pointercancel', onPointerUp);
         };
 
-        const onMouseMove = (e) => {
-            if (!isDragging) return;
+        const onPointerMove = (e) => {
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
@@ -242,23 +244,23 @@ class OverlayManager {
             element.style.top = `${state.y}px`;
         };
 
-        const onMouseUp = () => {
-            if (isDragging) {
-                isDragging = false;
-                element.style.cursor = 'move';
-                this.saveState();
-            }
+        const onPointerUp = (e) => {
+            element.releasePointerCapture(e.pointerId);
+            element.removeEventListener('pointermove', onPointerMove);
+            element.removeEventListener('pointerup', onPointerUp);
+            element.removeEventListener('pointercancel', onPointerUp);
+            element.style.cursor = 'move';
+            this.saveState();
         };
 
-        element.addEventListener('mousedown', onMouseDown);
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
+        element.addEventListener('pointerdown', onPointerDown);
 
         // Store cleanup so remove() can detach these listeners
         state._dragCleanup = () => {
-            element.removeEventListener('mousedown', onMouseDown);
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+            element.removeEventListener('pointerdown', onPointerDown);
+            element.removeEventListener('pointermove', onPointerMove);
+            element.removeEventListener('pointerup', onPointerUp);
+            element.removeEventListener('pointercancel', onPointerUp);
         };
     }
 
@@ -291,7 +293,31 @@ class OverlayManager {
             if (el) el.remove();
         });
         this.overlays = [];
-        this.saveState();
+        this.clearAllStorageKeys();
+    }
+
+    removeStorageKey() {
+        chrome.storage.local.remove(this.storageKey, () => {
+            if (chrome.runtime.lastError) {
+                console.warn('[OverLook] removeStorageKey failed:', chrome.runtime.lastError.message);
+            }
+        });
+    }
+
+    clearAllStorageKeys() {
+        chrome.storage.local.get(null, (items) => {
+            if (chrome.runtime.lastError) {
+                console.warn('[OverLook] clearAllStorageKeys get failed:', chrome.runtime.lastError.message);
+                return;
+            }
+            const keys = Object.keys(items).filter(k => k.startsWith('overlay_state_'));
+            if (keys.length === 0) return;
+            chrome.storage.local.remove(keys, () => {
+                if (chrome.runtime.lastError) {
+                    console.warn('[OverLook] clearAllStorageKeys remove failed:', chrome.runtime.lastError.message);
+                }
+            });
+        });
     }
 
     update(id, updates) {

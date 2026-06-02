@@ -608,6 +608,7 @@ class ControlPanel {
     _showCloseDialog() {
         const count = this.app.overlayManager.overlays.length;
         if (count === 0) {
+            this.app.overlayManager.removeStorageKey();
             this.hide();
             return;
         }
@@ -655,6 +656,7 @@ class ControlPanel {
         const close = (action) => {
             backdrop.remove();
             if (action === 'keep') {
+                this.app.overlayManager.removeStorageKey();
                 this.hide();
             } else if (action === 'delete') {
                 this.app.overlayManager.clear();
