@@ -266,25 +266,33 @@ class OverlayManager {
 
     saveState() {
         const state = this.overlays.map(o => ({ ...o }));
-        chrome.storage.local.set({ [this.storageKey]: state }, () => {
-            if (chrome.runtime.lastError) {
-                console.warn('[OverLook] saveState failed:', chrome.runtime.lastError.message);
-            }
-        });
+        try {
+            chrome.storage.local.set({ [this.storageKey]: state }, () => {
+                if (chrome.runtime.lastError) {
+                    console.warn('[OverLook] saveState failed:', chrome.runtime.lastError.message);
+                }
+            });
+        } catch (e) {
+            console.warn('[OverLook] saveState failed:', e.message);
+        }
     }
 
     loadState() {
-        chrome.storage.local.get([this.storageKey], (result) => {
-            if (chrome.runtime.lastError) {
-                console.warn('[OverLook] loadState failed:', chrome.runtime.lastError.message);
-                return;
-            }
-            const state = result[this.storageKey];
-            if (state && Array.isArray(state)) {
-                this.overlays = state;
-                this.overlays.forEach(overlay => this.renderOverlay(overlay));
-            }
-        });
+        try {
+            chrome.storage.local.get([this.storageKey], (result) => {
+                if (chrome.runtime.lastError) {
+                    console.warn('[OverLook] loadState failed:', chrome.runtime.lastError.message);
+                    return;
+                }
+                const state = result[this.storageKey];
+                if (state && Array.isArray(state)) {
+                    this.overlays = state;
+                    this.overlays.forEach(overlay => this.renderOverlay(overlay));
+                }
+            });
+        } catch (e) {
+            console.warn('[OverLook] loadState failed:', e.message);
+        }
     }
 
     clear() {
@@ -297,27 +305,39 @@ class OverlayManager {
     }
 
     removeStorageKey() {
-        chrome.storage.local.remove(this.storageKey, () => {
-            if (chrome.runtime.lastError) {
-                console.warn('[OverLook] removeStorageKey failed:', chrome.runtime.lastError.message);
-            }
-        });
+        try {
+            chrome.storage.local.remove(this.storageKey, () => {
+                if (chrome.runtime.lastError) {
+                    console.warn('[OverLook] removeStorageKey failed:', chrome.runtime.lastError.message);
+                }
+            });
+        } catch (e) {
+            console.warn('[OverLook] removeStorageKey failed:', e.message);
+        }
     }
 
     clearAllStorageKeys() {
-        chrome.storage.local.get(null, (items) => {
-            if (chrome.runtime.lastError) {
-                console.warn('[OverLook] clearAllStorageKeys get failed:', chrome.runtime.lastError.message);
-                return;
-            }
-            const keys = Object.keys(items).filter(k => k.startsWith('overlay_state_'));
-            if (keys.length === 0) return;
-            chrome.storage.local.remove(keys, () => {
+        try {
+            chrome.storage.local.get(null, (items) => {
                 if (chrome.runtime.lastError) {
-                    console.warn('[OverLook] clearAllStorageKeys remove failed:', chrome.runtime.lastError.message);
+                    console.warn('[OverLook] clearAllStorageKeys get failed:', chrome.runtime.lastError.message);
+                    return;
+                }
+                const keys = Object.keys(items).filter(k => k.startsWith('overlay_state_'));
+                if (keys.length === 0) return;
+                try {
+                    chrome.storage.local.remove(keys, () => {
+                        if (chrome.runtime.lastError) {
+                            console.warn('[OverLook] clearAllStorageKeys remove failed:', chrome.runtime.lastError.message);
+                        }
+                    });
+                } catch (e) {
+                    console.warn('[OverLook] clearAllStorageKeys remove failed:', e.message);
                 }
             });
-        });
+        } catch (e) {
+            console.warn('[OverLook] clearAllStorageKeys get failed:', e.message);
+        }
     }
 
     update(id, updates) {
