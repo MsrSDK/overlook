@@ -51,6 +51,8 @@ class SelectionManager {
     stop() {
         this.isSelecting = false;
         document.body.style.cursor = '';
+        document.removeEventListener('mousemove', this.handleMouseMove);
+        document.removeEventListener('mouseup', this.handleMouseUp);
         if (this.overlay) {
             this.overlay.remove();
             this.overlay = null;
@@ -99,6 +101,8 @@ class SelectionManager {
     handleMouseUp(e) {
         document.removeEventListener('mousemove', this.handleMouseMove);
         document.removeEventListener('mouseup', this.handleMouseUp);
+
+        if (!this.selectionBox) return;
 
         const rect = this.selectionBox.getBoundingClientRect();
         this.stop();
