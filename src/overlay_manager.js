@@ -265,8 +265,8 @@ class OverlayManager {
     }
 
     saveState() {
-        if (!chrome?.storage?.local) return;
-        const state = this.overlays.map(o => ({ ...o }));
+        if (!chrome?.storage?.local || !chrome?.runtime?.id) return;
+        const state = this.overlays.map(({ _dragCleanup, ...rest }) => rest);
         try {
             chrome.storage.local.set({ [this.storageKey]: state }, () => {
                 if (chrome.runtime.lastError) {

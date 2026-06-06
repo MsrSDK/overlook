@@ -502,6 +502,18 @@ class ControlPanel {
             this.panel.querySelector('#inpRotation').value = overlayState.rotation;
             this.panel.querySelector('#valRotation').textContent = `${overlayState.rotation}°`;
 
+            // Disable Save button for shapes (src is SVG string, not downloadable as image)
+            const btnDownload = this.panel.querySelector('#btnDownload');
+            if (overlayState.type === 'shape') {
+                btnDownload.disabled = true;
+                btnDownload.style.opacity = '0.4';
+                btnDownload.style.cursor = 'not-allowed';
+            } else {
+                btnDownload.disabled = false;
+                btnDownload.style.opacity = '';
+                btnDownload.style.cursor = '';
+            }
+
             // Show shape property controls if the selected overlay is a shape
             const shapePropsArea = this.panel.querySelector('#shapePropertiesArea');
             if (overlayState.type === 'shape') {
