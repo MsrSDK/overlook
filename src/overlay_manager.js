@@ -265,6 +265,7 @@ class OverlayManager {
     }
 
     saveState() {
+        if (!chrome?.storage?.local) return;
         const state = this.overlays.map(o => ({ ...o }));
         try {
             chrome.storage.local.set({ [this.storageKey]: state }, () => {
@@ -278,6 +279,7 @@ class OverlayManager {
     }
 
     loadState() {
+        if (!chrome?.storage?.local) return;
         try {
             chrome.storage.local.get([this.storageKey], (result) => {
                 if (chrome.runtime.lastError) {
@@ -305,6 +307,7 @@ class OverlayManager {
     }
 
     removeStorageKey() {
+        if (!chrome?.storage?.local) return;
         try {
             chrome.storage.local.remove(this.storageKey, () => {
                 if (chrome.runtime.lastError) {
@@ -317,6 +320,7 @@ class OverlayManager {
     }
 
     clearAllStorageKeys() {
+        if (!chrome?.storage?.local) return;
         try {
             chrome.storage.local.get(null, (items) => {
                 if (chrome.runtime.lastError) {
