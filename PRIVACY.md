@@ -1,6 +1,6 @@
 # Privacy Policy — OverLook
 
-**Last updated: 2026-06-03**
+**Last updated: 2026-06-07**
 
 ## Overview
 
@@ -23,10 +23,14 @@ The Extension uses `chrome.storage.local` to persist overlay state between page 
 - All data is stored **only on your local device** and is never sent to any external server.
 - Because screenshots and uploaded images are stored as base64 data, storage usage can grow over time if overlays are created on many pages.
 
-You can delete stored data at any time by:
-- Clicking "Clear All Overlays" in the control panel.
-- Choosing "Delete All & Close" in the close dialog.
-- Clearing extension data in Chrome settings (`chrome://settings/content/siteData`).
+### Clearing stored data
+
+| Action | What is deleted |
+|---|---|
+| "Clear All Overlays" button | Overlay data for **all pages** (`overlay_state_*` keys across the entire extension storage) |
+| "Delete All & Close" in the close dialog | Same as above — all pages |
+| "Keep & Close" in the close dialog | Only the **current page's** storage entry is removed (overlays remain visible until the page is reloaded, but will not be restored on the next visit) |
+| Chrome settings (`chrome://settings/content/siteData`) | All extension data |
 
 ## Screen Capture
 
@@ -54,10 +58,11 @@ When you add a shape (rectangle, circle, line, or arrow), the Extension generate
 
 ## Save (Download)
 
-When you click the "Save" button, the currently selected overlay is downloaded to your device as a PNG file. This download:
+When you click the "Save" button on a selected capture or upload overlay, that overlay is downloaded to your device as a PNG file. This download:
 
 - Is performed entirely within your browser via a standard `<a download>` element.
 - Does not involve any server or external service.
+- Is not available for shape overlays (the Save button is disabled when a shape is selected).
 
 ## Permissions
 

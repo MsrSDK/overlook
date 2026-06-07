@@ -1,55 +1,104 @@
-# OverLook (Screen Overlay Tool)
+![OverLook](images/MarqueePromotionalTile.png)
 
-OverLookは、ブラウザ上に画像やスクリーンショットを半透明で重ねて表示できるChrome拡張機能です。
+# OverLook
 
-## ✨ 主な機能
+**The overlay studio inside your browser.**
 
-- **範囲指定スクリーンショット**: 画面上の任意の範囲を切り取って、そのままオーバーレイとして表示できます。
-- **画像アップロード**: ローカルにある画像ファイルをアップロードしてオーバーレイ表示できます。
-  - [+ Upload]ボタンから画像のアップロードが可能です。
-- **画像の保存**: 選択中のオーバーレイを画像として保存できます。
-  - 対象のオーバーレイを選択した状態で[Save]ボタンを押下します。
-- **直感的な操作**:
-  - ドラッグ＆ドロップでオーバーレイを移動
-  - オーバーレイ四隅のハンドル操作でリサイズ（Shiftキーでアスペクト比固定）
-  - スライダーで透明度（Opacity）と回転（Rotation）を調整
-- **アンカーポイント・スケーリング**: 特定の点を基準（アンカー）にして拡大縮小が可能です。位置合わせをした後の微調整に便利です。
-- **レイヤー管理**: 複数のオーバーレイを表示し、最前面への移動や削除が可能です。
-- **記号の配置**: 四角、〇、線、矢印の記号をオーバーレイ画像としてブラウザ上に配置します。
+OverLook is a Chrome extension that lets you capture any region of the screen or upload a local image and display it as a movable, resizable overlay on top of any web page — without leaving the browser.
 
-## 📦 インストール方法
+---
 
-この拡張機能は現在開発者モードでインストールする必要があります。
+## ✨ Features
 
-1. このリポジトリをクローンまたはダウンロードします。
-2. Chromeブラウザを開き、アドレスバーに `chrome://extensions` と入力して移動します。
-3. 右上の「デベロッパーモード」スイッチをオンにします。
-4. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックします。
-5. ダウンロードしたフォルダ（`manifest.json`が含まれているフォルダ）を選択します。
+### 📸 Capture & Upload
+- **Screen Capture** — Click `+ Capture`, drag to select any region of the live page, and it instantly becomes an overlay. Retina / high-DPI displays are handled automatically.
+- **Image Upload** — Click `+ Upload` to load a local PNG, JPG, or any browser-supported image. Images larger than 50% of the viewport are scaled down automatically.
+- **Export as PNG** — Select any overlay and click **Save** to download it as a timestamped PNG file.
 
-## 🚀 使い方
+### 🔷 Shape Annotation
+- **Draw shapes** directly on the page: rectangle, circle, line, or arrow — all rendered as crisp SVG.
+- **Color presets** (red / blue / black) plus a custom color picker for any shade.
+- **Stroke thickness** slider (1–20 px); arrows also have a separate **head size** slider (1–50).
+- Shapes can be selected and edited after placement just like image overlays.
 
-1. **起動**: インストール後、Chromeのツールバーにある拡張機能アイコンをクリックします。
-2. **コントロールパネル**: 画面右上にコントロールパネルが表示されます。
-3. **キャプチャ**: 「+ Capture」ボタンをクリックし、画面上のキャプチャしたい範囲をドラッグして選択します。選択した範囲が即座にオーバーレイとして表示されます。
-4. **アップロード**: 「+ Upload」ボタンをクリックすると、ローカルの画像ファイルを選択して表示できます。
-5. **調整**:
-   - オーバーレイをクリックして選択状態にします。
-   - **透明度**: Opacityスライダーで画像の透過度を調整します。
-   - **透明度切替**: 透明度スライダー下のトグルボタンを押すと、現在の透明度と透明度100%を瞬時に切り替えます。
-   - **回転**: Rotationスライダーで画像を回転させます。
-   - **90度回転**: 回転スライダー下の[±90°]ボタンを押すと、画像向きを90度ずつ回転します。
-   - **リサイズ**: 画像の四隅にあるハンドルをドラッグしてサイズを変更します。
-   - **アンカースケール**: 「Enable Anchor Scale」をクリックし、画像の任意の点をクリックするとその地点にアンカーポイント(赤点)が配置されます。続けてオーバーレイ上の別の点をドラッグ&ドロップするとアンカーポイントを基準としてオーバーレイが拡大縮小します。
-6. **記号配置**:
-   - 色と太さを選択した後に記号ボタンを押すと画面上に記号レイヤーが配置されます。
-   - 記号の縦横比は自動調整されないため、細かい調整が必要な場合や見た目にこだわる場合はPC標準のスクリーンショット機能を利用することをお勧めします。
-7. **レイヤー管理**: 対象のオーバーレイを選択した状態で[To Front]ボタンを押下するとレイヤーを前面に上げることができます。
-   
-## 🛠️ 開発者向け情報
+### 🖱️ Transform
+- **Drag** any overlay freely across the page.
+- **Resize** with four corner handles. Hold **Shift** to lock the aspect ratio.
+- **Rotate** with a 0–360° slider, or snap in 90° steps with the `±90°` buttons.
+- Rotation-aware resize math keeps corners anchored correctly at any angle.
 
-- `src/background.js`: スクリーンショット撮影などのバックグラウンド処理
-- `src/content.js`: ページへのスクリプト注入と初期化
-- `src/control_panel.js`: UIパネルの描画とイベントハンドリング
-- `src/overlay_manager.js`: オーバーレイ要素の管理（移動、リサイズ、保存など）
-- `src/selection_manager.js`: キャプチャ範囲選択のロジック
+### 🌗 Opacity
+- **Opacity slider** (0–100%) with a live percentage readout.
+- **Toggle button** — instantly flip between 100% opacity and your last-set value. Useful for quick before/after comparisons.
+
+### 📍 Anchor Scaling
+Precisely align an overlay to a reference point on the page, then scale it from that anchor:
+
+1. Click **Enable Anchor Scale** — the cursor becomes a crosshair.
+2. Click a point on the overlay to plant the anchor (marked with a red dot).
+3. Drag anywhere to scale the overlay proportionally around that fixed point.
+
+### 🗂️ Layer Management
+- Keep as many overlays on screen simultaneously as you need.
+- Click any overlay to select it; it gets a blue border and resize handles.
+- **To Front** brings the selected overlay to the top of the z-stack.
+- **Delete** removes the selected overlay (with confirmation).
+- **Clear All Overlays** removes everything at once.
+
+### 💾 Persistent State
+Overlays are saved automatically to `chrome.storage.local` and restored when you revisit the same page. Each URL (origin + path) has its own independent overlay set.
+
+### 🔒 Privacy
+- No data collection, no telemetry, no analytics.
+- All processing is 100% local — nothing leaves your browser.
+- No account, login, or network access required.
+- No third-party libraries.
+
+---
+
+## 🖼️ Screenshots
+
+| | | |
+|:---:|:---:|:---:|
+| ![Capture or upload](images/ScreenShot001.png) | ![Align with precision](images/ScreenShot002.png) | ![Shape markup](images/ScreenShot003.png) |
+| **Instant capture or upload** — drag a region or load a file | **Align with precision** — adjust opacity, set an anchor, then drag to scale | **Markup in the browser** — add and customize SVG shapes |
+
+---
+
+## 📦 Installation
+
+### Chrome Web Store
+*(Coming soon — link will be added when the listing is live.)*
+
+### 🛠️ Developer Mode (manual)
+1. Clone or download this repository.
+2. Open Chrome and go to `chrome://extensions`.
+3. Enable **Developer mode** (toggle in the top-right corner).
+4. Click **Load unpacked** and select the folder that contains `manifest.json`.
+
+---
+
+## 🚀 Usage
+
+1. **Open the panel** — click the OverLook icon in the Chrome toolbar. The **Overlay Tools** panel appears in the top-right corner of the page.
+
+2. **Add an overlay**
+   - **Capture**: click `+ Capture`, then drag a rectangle over the area you want. Release to create the overlay.
+   - **Upload**: click `+ Upload` and pick a local image file.
+
+3. **Add shapes** — choose a color and thickness in the **Add Shape** section, then click a shape button (⬜ ◯ ━ ➞). The shape appears centered on the page.
+
+4. **Select and adjust** — click any overlay to select it, then:
+   - Drag to **move**.
+   - Drag a corner handle to **resize** (hold **Shift** to lock aspect ratio).
+   - Use the **Opacity** slider or toggle button to control transparency.
+   - Use the **Rotation** slider or ±90° buttons to rotate.
+   - For shapes, edit **Color** and **Thickness** in the Shape Properties section.
+
+5. **Anchor Scaling** — click **Enable Anchor Scale**, click a reference point on the overlay, then drag to scale from that anchor.
+
+6. **Layer order** — select an overlay and click **To Front** to bring it above others.
+
+7. **Save** — select an overlay and click **Save** to export it as a PNG.
+
+8. **Close** — click × on the panel. If overlays are on screen, you will be asked whether to keep them or delete them.
