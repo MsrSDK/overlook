@@ -16,12 +16,12 @@ class ControlPanel {
             top: '20px',
             right: '20px',
             width: '250px',
-            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+            backgroundColor: 'rgba(20, 30, 37, 0.97)',
             color: '#fff',
             padding: '15px',
             borderRadius: '8px',
             zIndex: '2147483647', // Max z-index
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            boxShadow: '0 6px 20px rgba(0,0,0,0.7)',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             fontSize: '14px',
             display: 'none',
@@ -29,70 +29,70 @@ class ControlPanel {
         });
 
         this.panel.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(70,115,140,0.4); padding-bottom:10px;">
         <h3 style="margin:0; font-size:16px; font-weight:600;">Overlay Tools</h3>
-        <button id="closePanel" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:18px; padding:0;">&times;</button>
+        <button id="closePanel" style="background:none; border:none; color:#7FA8BF; cursor:pointer; font-size:18px; padding:0;">&times;</button>
       </div>
       <div style="display:flex; gap:10px; margin-bottom:20px;">
-        <button id="btnCapture" style="flex:1; padding:8px; background:#007bff; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:500;">+ Capture</button>
-        <button id="btnUpload" style="flex:1; padding:8px; background:#28a745; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:500;">+ Upload</button>
+        <button id="btnCapture" style="flex:1; padding:8px; background:#2B9CC4; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:500;">+ Capture</button>
+        <button id="btnUpload" style="flex:1; padding:8px; background:#6DB64A; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:500;">+ Upload</button>
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
       </div>
 
-      <div style="margin-bottom:20px; border-bottom:1px solid #444; padding-bottom:15px;">
+      <div style="margin-bottom:20px; border-bottom:1px solid rgba(70,115,140,0.4); padding-bottom:15px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-             <label style="font-size:12px; color:#ccc; font-weight:600;">Add Shape</label>
+             <label style="font-size:12px; color:#C5D8E5; font-weight:600;">Add Shape</label>
              <div style="display:flex; align-items:center; gap:8px;">
                  <div id="colorPresets" style="display:flex; gap:4px;">
                     <button data-color="#ff0000" title="Red" style="width:18px; height:18px; background:#ff0000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
                     <button data-color="#0000ff" title="Blue" style="width:18px; height:18px; background:#0000ff; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
                     <button data-color="#000000" title="Black" style="width:18px; height:18px; background:#000000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
                  </div>
-                 <input type="color" id="inpShapeColor" value="#ff0000" style="color:#ccc; border:none; width:50px; height:25px; padding:0; background:none; cursor:pointer;" title="Custom Color">
+                 <input type="color" id="inpShapeColor" value="#ff0000" style="color:#C5D8E5; border:none; width:50px; height:25px; padding:0; background:none; cursor:pointer;" title="Custom Color">
              </div>
           </div>
           <div style="display:flex; gap:5px; margin-bottom:8px;">
-            <button id="btnShapeRect" title="Rectangle" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">⬜</button>
-            <button id="btnShapeCircle" title="Circle" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">◯</button>
-            <button id="btnShapeLine" title="Line" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">━</button>
-            <button id="btnShapeArrow" title="Arrow" style="flex:1; padding:6px; background:#444; border:1px solid #555; border-radius:4px; color:white; cursor:pointer; font-size:14px;">➞</button>
+            <button id="btnShapeRect" title="Rectangle" style="flex:1; padding:6px; background:#253545; border:1px solid #3A5870; border-radius:4px; color:#C5D8E5; cursor:pointer; font-size:14px;">⬜</button>
+            <button id="btnShapeCircle" title="Circle" style="flex:1; padding:6px; background:#253545; border:1px solid #3A5870; border-radius:4px; color:#C5D8E5; cursor:pointer; font-size:14px;">◯</button>
+            <button id="btnShapeLine" title="Line" style="flex:1; padding:6px; background:#253545; border:1px solid #3A5870; border-radius:4px; color:#C5D8E5; cursor:pointer; font-size:14px;">━</button>
+            <button id="btnShapeArrow" title="Arrow" style="flex:1; padding:6px; background:#253545; border:1px solid #3A5870; border-radius:4px; color:#C5D8E5; cursor:pointer; font-size:14px;">➞</button>
           </div>
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-             <label style="font-size:11px; color:#aaa;">Thickness:</label>
+             <label style="font-size:11px; color:#7FA8BF;">Thickness:</label>
              <input type="range" id="inpShapeThickness" min="1" max="20" value="5" style="flex:1; cursor:pointer; height:4px;">
           </div>
           <div id="arrowControls" style="display:none; align-items:center; gap:8px;">
-             <label style="font-size:11px; color:#aaa;">Head Size:</label>
+             <label style="font-size:11px; color:#7FA8BF;">Head Size:</label>
              <input type="range" id="inpArrowHeadSize" min="1" max="50" value="15" style="flex:1; cursor:pointer; height:4px;">
           </div>
 
       </div>
       
-      <div id="controlsArea" style="display:none; background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+      <div id="controlsArea" style="display:none; background:rgba(0,0,0,0.22); padding:10px; border-radius:6px; margin-bottom:15px;">
         <div style="margin-bottom:12px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <label style="font-size:12px; color:#ccc;">Opacity</label>
+            <label style="font-size:12px; color:#C5D8E5;">Opacity</label>
             <span id="valOpacity" style="font-size:12px;">100%</span>
           </div>
           <input type="range" id="inpOpacity" min="0" max="1" step="0.05" value="1" style="width:100%; cursor:pointer;">
-          <button id="btnToggleOpacity" style="width:100%; padding:6px; margin-top:8px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">⇄ Toggle 100%</button>
+          <button id="btnToggleOpacity" style="width:100%; padding:6px; margin-top:8px; background:#314C5E; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">⇄ Toggle 100%</button>
         </div>
         <div style="margin-bottom:12px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <label style="font-size:12px; color:#ccc;">Rotation</label>
+            <label style="font-size:12px; color:#C5D8E5;">Rotation</label>
             <span id="valRotation" style="font-size:12px;">0°</span>
           </div>
           <input type="range" id="inpRotation" min="0" max="360" step="1" value="0" style="width:100%; cursor:pointer;">
           <div style="display:flex; gap:8px; margin-top:8px;">
-            <button id="btnRotateLeft" style="flex:1; padding:6px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↶ -90°</button>
-            <button id="btnRotateRight" style="flex:1; padding:6px; background:#555; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↷ +90°</button>
+            <button id="btnRotateLeft" style="flex:1; padding:6px; background:#314C5E; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↶ -90°</button>
+            <button id="btnRotateRight" style="flex:1; padding:6px; background:#314C5E; border:none; border-radius:4px; color:white; cursor:pointer; font-size:11px;">↷ +90°</button>
           </div>
         </div>
         
-        <div id="shapePropertiesArea" style="display:none; border-top:1px solid #444; padding-top:10px; margin-bottom:12px;">
-          <label style="font-size:12px; color:#ccc; display:block; margin-bottom:8px;">Shape Properties</label>
+        <div id="shapePropertiesArea" style="display:none; border-top:1px solid rgba(70,115,140,0.4); padding-top:10px; margin-bottom:12px;">
+          <label style="font-size:12px; color:#C5D8E5; display:block; margin-bottom:8px;">Shape Properties</label>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label style="font-size:11px; color:#aaa;">Color:</label>
+            <label style="font-size:11px; color:#7FA8BF;">Color:</label>
             <div style="display:flex; align-items:center; gap:4px;">
               <div id="editColorPresets" style="display:flex; gap:4px;">
                 <button data-color="#ff0000" title="Red" style="width:18px; height:18px; background:#ff0000; border:1px solid #ddd; border-radius:50%; cursor:pointer; padding:0;"></button>
@@ -103,35 +103,35 @@ class ControlPanel {
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-            <label style="font-size:11px; color:#aaa;">Thickness:</label>
+            <label style="font-size:11px; color:#7FA8BF;">Thickness:</label>
             <input type="range" id="inpEditShapeThickness" min="1" max="20" value="5" style="flex:1; cursor:pointer; height:4px;">
           </div>
           <div id="editArrowControls" style="display:none; align-items:center; gap:8px;">
-            <label style="font-size:11px; color:#aaa;">Head Size:</label>
+            <label style="font-size:11px; color:#7FA8BF;">Head Size:</label>
             <input type="range" id="inpEditArrowHeadSize" min="1" max="50" value="15" style="flex:1; cursor:pointer; height:4px;">
           </div>
         </div>
 
-        <div style="margin-bottom:15px; border-top:1px solid #444; padding-top:10px;">
-           <label style="font-size:12px; color:#ccc; display:block; margin-bottom:8px;">Anchor Scaling</label>
-           <button id="btnAnchorMode" style="width:100%; padding:8px; background:#444; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; gap:5px;">
+        <div style="margin-bottom:15px; border-top:1px solid rgba(70,115,140,0.4); padding-top:10px;">
+           <label style="font-size:12px; color:#C5D8E5; display:block; margin-bottom:8px;">Anchor Scaling</label>
+           <button id="btnAnchorMode" style="width:100%; padding:8px; background:#314C5E; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; gap:5px;">
              <span>📍</span> Enable Anchor Scale
            </button>
-           <div id="anchorInstructions" style="display:none; font-size:11px; color:#aaa; margin-top:5px; line-height:1.4;">
+           <div id="anchorInstructions" style="display:none; font-size:11px; color:#7FA8BF; margin-top:5px; line-height:1.4;">
              1. Click on image to set anchor.<br>
              2. Drag anywhere to scale.
            </div>
         </div>
 
         <div style="display:flex; gap:10px;">
-           <button id="btnDownload" style="flex:1; padding:6px; background:#17a2b8; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Save</button>
-           <button id="btnFront" style="flex:1; padding:6px; background:#6c757d; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">To Front</button>
-           <button id="btnDelete" style="flex:1; padding:6px; background:#dc3545; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Delete</button>
+           <button id="btnDownload" style="flex:1; padding:6px; background:#2B9CC4; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Save</button>
+           <button id="btnFront" style="flex:1; padding:6px; background:#314C5E; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">To Front</button>
+           <button id="btnDelete" style="flex:1; padding:6px; background:#C23B37; border:none; border-radius:4px; color:white; cursor:pointer; font-size:12px;">Delete</button>
         </div>
       </div>
       
       <div style="text-align:center;">
-        <button id="btnClearAll" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:12px; text-decoration:underline;">Clear All Overlays</button>
+        <button id="btnClearAll" style="background:none; border:none; color:#7FA8BF; cursor:pointer; font-size:12px; text-decoration:underline;">Clear All Overlays</button>
       </div>
     `;
 
@@ -326,13 +326,13 @@ class ControlPanel {
         const instr = this.panel.querySelector('#anchorInstructions');
 
         if (this.isAnchorMode) {
-            btn.style.background = '#28a745';
+            btn.style.background = '#6DB64A';
             btn.innerHTML = '<span>📍</span> Anchor Scale ON';
             instr.style.display = 'block';
             document.body.style.cursor = 'crosshair';
             this.startAnchorLogic();
         } else {
-            btn.style.background = '#444';
+            btn.style.background = '#314C5E';
             btn.innerHTML = '<span>📍</span> Enable Anchor Scale';
             instr.style.display = 'none';
             document.body.style.cursor = '';
@@ -386,7 +386,7 @@ class ControlPanel {
             width: '10px',
             height: '10px',
             borderRadius: '50%',
-            backgroundColor: 'red',
+            backgroundColor: '#C23B37',
             border: '2px solid white',
             zIndex: '2147483647',
             pointerEvents: 'none'
@@ -477,7 +477,7 @@ class ControlPanel {
             // Deselect previous
             const prevEl = document.querySelector(`div[data-id="${this.selectedOverlay.id}"]`);
             if (prevEl) {
-                prevEl.style.borderColor = this.selectedOverlay.type === 'shape' ? 'transparent' : 'rgba(255, 255, 255, 0.5)';
+                prevEl.style.borderColor = this.selectedOverlay.type === 'shape' ? 'transparent' : 'rgba(43, 156, 196, 0.4)';
                 prevEl.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
             }
 
@@ -492,7 +492,7 @@ class ControlPanel {
             // Select new
             const el = document.querySelector(`div[data-id="${overlayState.id}"]`);
             if (el) {
-                el.style.borderColor = '#007bff'; // Active color
+                el.style.borderColor = '#2B9CC4'; // Active color
                 el.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'block');
             }
 
@@ -630,7 +630,7 @@ class ControlPanel {
             position: 'fixed',
             top: '0', left: '0',
             width: '100%', height: '100%',
-            background: 'rgba(0,0,0,0.55)',
+            background: 'rgba(0, 0, 0, 0.65)',
             zIndex: '2147483646',
             display: 'flex',
             alignItems: 'center',
@@ -639,12 +639,12 @@ class ControlPanel {
 
         const dialog = document.createElement('div');
         Object.assign(dialog.style, {
-            background: 'rgba(30,30,30,0.98)',
+            background: 'rgba(20, 30, 37, 0.99)',
             color: '#fff',
             padding: '24px',
             borderRadius: '10px',
             width: '300px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             backdropFilter: 'blur(10px)'
         });
@@ -652,13 +652,13 @@ class ControlPanel {
         const label = count === 1 ? '1 overlay' : `${count} overlays`;
         dialog.innerHTML = `
             <h3 style="margin:0 0 10px; font-size:16px; font-weight:600;">Close Panel</h3>
-            <p style="margin:0 0 20px; font-size:13px; color:#ccc; line-height:1.6;">
+            <p style="margin:0 0 20px; font-size:13px; color:#C5D8E5; line-height:1.6;">
                 You have ${label} on screen.<br>Keep them after closing?
             </p>
             <div style="display:flex; flex-direction:column; gap:8px;">
-                <button id="dlgKeep"   style="padding:10px; background:#007bff; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Keep &amp; Close</button>
-                <button id="dlgDelete" style="padding:10px; background:#dc3545; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Delete All &amp; Close</button>
-                <button id="dlgCancel" style="padding:10px; background:#444;    border:none; border-radius:6px; color:#ccc; cursor:pointer; font-size:13px;">Cancel</button>
+                <button id="dlgKeep"   style="padding:10px; background:#2B9CC4; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Keep &amp; Close</button>
+                <button id="dlgDelete" style="padding:10px; background:#C23B37; border:none; border-radius:6px; color:#fff; cursor:pointer; font-size:13px; font-weight:500;">Delete All &amp; Close</button>
+                <button id="dlgCancel" style="padding:10px; background:#314C5E; border:none; border-radius:6px; color:#7FA8BF; cursor:pointer; font-size:13px;">Cancel</button>
             </div>
         `;
 

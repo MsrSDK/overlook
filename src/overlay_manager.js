@@ -53,7 +53,7 @@ class OverlayManager {
             zIndex: overlayState.zIndex,
             cursor: 'move',
             userSelect: 'none',
-            border: overlayState.type === 'shape' ? '2px solid transparent' : '2px solid rgba(255, 255, 255, 0.5)', // Shapes are transparent by default
+            border: overlayState.type === 'shape' ? '2px solid transparent' : '2px solid rgba(43, 156, 196, 0.45)', // Shapes are transparent by default
             boxSizing: 'border-box'
         });
 
@@ -91,8 +91,8 @@ class OverlayManager {
                 position: 'absolute',
                 width: '10px',
                 height: '10px',
-                backgroundColor: '#fff',
-                border: '1px solid #000',
+                backgroundColor: '#2B9CC4',
+                border: '1px solid #1A3040',
                 borderRadius: '50%',
                 zIndex: '10',
                 display: 'none' // Hidden by default, shown when selected
